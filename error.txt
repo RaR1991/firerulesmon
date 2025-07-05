@@ -1,0 +1,43 @@
+TypeError
+TypeError: jinja2.runtime.Context.call() got multiple values for keyword argument 'page'
+
+Traceback (most recent call last)
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\app.py", line 2552, in __call__
+return self.wsgi_app(environ, start_response)
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\app.py", line 2532, in wsgi_app
+response = self.handle_exception(e)
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\app.py", line 2529, in wsgi_app
+response = self.full_dispatch_request()
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\app.py", line 1825, in full_dispatch_request
+rv = self.handle_user_exception(e)
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\app.py", line 1823, in full_dispatch_request
+rv = self.dispatch_request()Open an interactive python shell in this frame
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\app.py", line 1799, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask_login\utils.py", line 290, in decorated_view
+return current_app.ensure_sync(func)(*args, **kwargs)
+File "D:\PoweredByGemini\FirweallMon\app\blueprints\rules\routes.py", line 121, in rules_explorer
+return render_template('rules_explorer.html',
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\templating.py", line 147, in render_template
+return _render(app, template, context)
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\flask\templating.py", line 130, in _render
+rv = template.render(context)
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\jinja2\environment.py", line 1295, in render
+self.environment.handle_exception()
+File "D:\PoweredByGemini\FirweallMon\.venv\lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+raise rewrite_traceback_stack(source=source)
+File "D:\PoweredByGemini\FirweallMon\app\templates\rules_explorer.html", line 1, in top-level template code
+{% extends "base.html" %}
+File "D:\PoweredByGemini\FirweallMon\app\templates\base.html", line 137, in top-level template code
+{% block content %}{% endblock %}
+File "D:\PoweredByGemini\FirweallMon\app\templates\rules_explorer.html", line 162, in block 'content'
+<a href="{{ url_for('rules.rules_explorer', page=pagination.prev_num, **request.args) }}"
+TypeError: jinja2.runtime.Context.call() got multiple values for keyword argument 'page'
+The debugger caught an exception in your WSGI application. You can now look at the traceback which led to the error.
+To switch between the interactive traceback and the plaintext one, you can click on the "Traceback" headline. From the text traceback you can also create a paste of it. For code execution mouse-over the frame you want to debug and click on the console icon on the right side.
+
+You can execute arbitrary Python code in the stack frames and there are some extra helpers available for introspection:
+
+dump() shows all variables in the frame
+dump(obj) dumps all that's known about the object
+Brought to you by DON'T PANIC, your friendly Werkzeug powered traceback interpreter.

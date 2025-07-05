@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Rules Explorer - Firewall Manager{% endblock %}
+
+{% macro pagination_widget(pagination, endpoint, query_params) %}
+    <div class="flex justify-between items-center pt-3">
+        <div class="text-sm" style="color: var(--text-color);">
+            Showing {{ (pagination.page - 1) * pagination.per_page + 1 }} to {{ (pagination.page - 1) * pagination.per_page + pagination.items|length }} of {{ pagination.total }} entries
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ url_for(endpoint, page=pagination.prev_num, **query_params) }}"
+               class="px-3 py-1 rounded-md {% if not pagination.has_prev %}opacity-50 cursor-not-allowed{% endif %}"
+               style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                Previous
+            </a>
+            {% for p in pagination.iter_pages() %}
+                {% if p %}
+                    <a href="{{ url_for(endpoint, page=p, **query_params) }}"
+                       class="px-3 py-1 rounded-md {% if p == pagination.page %}bg-blue-600 text-white{% else %}" style="background-color: var(--button-background-color); color: var(--button-text-color);"{% endif %}>
+                        {{ p }}
+                    </a>
+                {% else %}
+                    <span class="px-3 py-1">…</span>
+                {% endif %}
+            {% endfor %}
+            <a href="{{ url_for(endpoint, page=pagination.next_num, **query_params) }}"
+               class="px-3 py-1 rounded-md {% if not pagination.has_next %}opacity-50 cursor-not-allowed{% endif %}"
+               style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                Next
+            </a>
+        </div>
+    </div>
+{% endmacro %}
+
+{% block content %}
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5" style="color: var(--text-color);">Rules Explorer</h2>
+
+<div class="px-4 py-3">
+    <form action="{{ url_for('rules.rules_explorer') }}" method="get" class="space-y-4">
+        <!-- Action Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl border" style="border-color: var(--table-border-color); background-color: var(--table-background-color);">
+            <!-- Search -->
+            <div class="flex flex-1 items-stretch h-12 min-w-[250px]">
+                <div class="flex items-center justify-center pl-4 rounded-l-xl" style="background-color: var(--input-background-color); color: var(--input-placeholder-color); border: 1px solid var(--table-border-color); border-right: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
+                </div>
+                <input type="text" name="search" placeholder="Quick Search..." class="form-input flex-1 resize-none overflow-hidden rounded-r-xl focus:outline-0 focus:ring-0 h-full px-4 text-base font-normal leading-normal" style="background-color: var(--input-background-color); color: var(--input-text-color); border: 1px solid var(--table-border-color);" value="{{ search_query }}">
+            </div>
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2">
+                <button type="button" id="advanced-filter-toggle" class="flex items-center justify-center rounded-xl h-10 gap-2 text-sm font-bold px-4" style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                    Filters
+                </button>
+                <div class="relative">
+                    <button type="button" id="customize-columns-button" class="flex items-center justify-center rounded-xl h-10 gap-2 text-sm font-bold px-4" style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                        Customize
+                    </button>
+                    <div id="customize-columns-dropdown" class="absolute right-0 mt-2 w-48 rounded-xl shadow-lg z-10 hidden" style="background-color: var(--table-background-color);">
+                        <div class="p-2" style="color: var(--text-color);">
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="id" class="form-checkbox" checked><span>ID</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="source" class="form-checkbox" checked><span>Source</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="destination" class="form-checkbox" checked><span>Destination</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="port" class="form-checkbox" checked><span>Port</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="protocol" class="form-checkbox" checked><span>Protocol</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="action" class="form-checkbox" checked><span>Action</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="tickets" class="form-checkbox" checked><span>Tickets</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" data-column-name="updated_at" class="form-checkbox" checked><span>Last Modified</span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <button type="button" id="export-dropdown-button" class="flex items-center justify-center rounded-xl h-10 gap-2 text-sm font-bold px-4" style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                        Export
+                    </button>
+                    <div id="export-dropdown-menu" class="absolute right-0 mt-2 w-48 rounded-xl shadow-lg z-10 hidden" style="background-color: var(--table-background-color);">
+                        <a href="#" id="export-csv-option" class="block px-4 py-2 text-sm" style="color: var(--text-color);">Export to CSV</a>
+                        <a href="#" id="export-json-option" class="block px-4 py-2 text-sm" style="color: var(--text-color);">Export to JSON</a>
+                    </div>
+                </div>
+                <a href="{{ url_for('rules.create_rule') }}" class="flex items-center justify-center rounded-xl h-10 bg-blue-600 text-white gap-2 text-sm font-bold px-4">
+                    Create Rule
+                </a>
+            </div>
+        </div>
+
+        <!-- Advanced Filters Section -->
+        <div id="advanced-filters" class="hidden p-4 rounded-xl border" style="border-color: var(--table-border-color); background-color: var(--table-background-color);">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <input type="text" name="source" placeholder="Source IP" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.source or '' }}">
+                <input type="text" name="destination" placeholder="Destination IP" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.destination or '' }}">
+                <input type="text" name="port" placeholder="Port" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.port or '' }}">
+                <input type="text" name="protocol" placeholder="Protocol" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.protocol or '' }}">
+                <input type="text" name="interface" placeholder="Interface" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.interface or '' }}">
+                <input type="text" name="action" placeholder="Action" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.action or '' }}">
+                <input type="text" name="tags" placeholder="Tags" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.tags or '' }}">
+                <input type="text" name="tickets" placeholder="Tickets" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ filters.tickets or '' }}">
+                <input type="date" name="start_date" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ request.args.get('start_date', '') }}">
+                <input type="date" name="end_date" class="form-input rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);" value="{{ request.args.get('end_date', '') }}">
+            </div>
+            <div class="flex items-center gap-4 mt-4">
+                <button type="submit" class="flex items-center justify-center rounded-xl h-10 gap-2 text-sm font-bold px-4" style="background-color: var(--link-color); color: var(--button-text-color);">Apply Filters</button>
+                <button type="button" id="clear-filters-button" class="flex items-center justify-center rounded-xl h-10 gap-2 text-sm font-bold px-4" style="background-color: var(--button-background-color); color: var(--button-text-color);">Clear Filters</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% set query_params = request.args.to_dict() %}
+{% if 'page' in query_params %}{% set _ = query_params.pop('page') %}{% endif %}
+{% if 'sort_by' in query_params %}{% set _ = query_params.pop('sort_by') %}{% endif %}
+{% if 'sort_order' in query_params %}{% set _ = query_params.pop('sort_order') %}{% endif %}
+
+<div class="w-full @container px-4">
+    <div class="flex justify-between items-center py-3">
+        <div class="flex items-center gap-2">
+            <span style="color: var(--text-color);">Show</span>
+            <select id="per-page-select" class="form-select rounded-xl" style="background-color: var(--input-background-color); color: var(--input-text-color);">
+                <option value="10" {% if pagination.per_page == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if pagination.per_page == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if pagination.per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if pagination.per_page == 100 %}selected{% endif %}>100</option>
+            </select>
+            <span style="color: var(--text-color);">entries</span>
+        </div>
+        {{ pagination_widget(pagination, 'rules.rules_explorer', query_params) }}
+    </div>
+    <div class="flex overflow-hidden rounded-xl border" style="border-color: var(--table-border-color); background-color: var(--table-background-color);">
+        <table class="w-full flex-1">
+            <thead>
+                <tr id="rules-table-header" style="background-color: var(--table-header-background-color);">
+                    <th data-column-name="id" class="px-4 py-3 text-left text-sm font-medium"><a href="{{ url_for('rules.rules_explorer', sort_by='id', sort_order=new_sort_order, **query_params) }}" style="color: var(--link-color);">ID</a></th>
+                    <th data-column-name="source" class="px-4 py-3 text-left text-sm font-medium"><a href="{{ url_for('rules.rules_explorer', sort_by='source', sort_order=new_sort_order, **query_params) }}" style="color: var(--link-color);">Source</a></th>
+                    <th data-column-name="destination" class="px-4 py-3 text-left text-sm font-medium"><a href="{{ url_for('rules.rules_explorer', sort_by='destination', sort_order=new_sort_order, **query_params) }}" style="color: var(--link-color);">Destination</a></th>
+                    <th data-column-name="port" class="px-4 py-3 text-left text-sm font-medium"><a href="{{ url_for('rules.rules_explorer', sort_by='port', sort_order=new_sort_order, **query_params) }}" style="color: var(--link-color);">Port</a></th>
+                    <th data-column-name="protocol" class="px-4 py-3 text-left text-sm font-medium"><a href="{{ url_for('rules.rules_explorer', sort_by='protocol', sort_order=new_sort_order, **query_params) }}" style="color: var(--link-color);">Protocol</a></th>
+                    <th data-column-name="action" class="px-4 py-3 text-left text-sm font-medium"><a href="{{ url_for('rules.rules_explorer', sort_by='action', sort_order=new_sort_order, **query_params) }}" style="color: var(--link-color);">Action</a></th>
+                    <th data-column-name="tickets" class="px-4 py-3 text-left text-sm font-medium">Tickets</th>
+                    <th data-column-name="updated_at" class="px-4 py-3 text-left text-sm font-medium"><a href="{{ url_for('rules.rules_explorer', sort_by='updated_at', sort_order=new_sort_order, **query_params) }}" style="color: var(--link-color);">Last Modified</a></th>
+                </tr>
+            </thead>
+            <tbody id="rules-table-body">
+                {% for rule in rules %}
+                <tr class="border-t cursor-pointer" style="border-color: var(--table-border-color);" onclick="window.location='{{ url_for('rules.rule_detail', rule_id=rule.id) }}';" onmouseover="this.style.backgroundColor='var(--table-row-hover-background-color)'" onmouseout="this.style.backgroundColor='var(--table-background-color)'">
+                    <td data-column-name="id" class="h-[72px] px-4 py-2 text-sm font-normal">{{ rule.id }}</td>
+                    <td data-column-name="source" class="h-[72px] px-4 py-2 text-sm font-normal">{{ rule.source }}</td>
+                    <td data-column-name="destination" class="h-[72px] px-4 py-2 text-sm font-normal">{{ rule.destination }}</td>
+                    <td data-column-name="port" class="h-[72px] px-4 py-2 text-sm font-normal">{{ rule.port if rule.port else 'N/A' }}</td>
+                    <td data-column-name="protocol" class="h-[72px] px-4 py-2 text-sm font-normal">{{ rule.protocol if rule.protocol else 'N/A' }}</td>
+                    <td data-column-name="action" class="h-[72px] px-4 py-2 text-sm font-normal">{{ rule.action }}</td>
+                    <td data-column-name="tickets" class="h-[72px] px-4 py-2 text-sm font-normal">
+                        {% if rule.tickets %}{% for ticket in rule.tickets %}{{ ticket.ticket_number }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}N/A{% endif %}
+                    </td>
+                    <td data-column-name="updated_at" class="h-[72px] px-4 py-2 text-sm font-normal">{{ rule.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="h-[72px] px-4 py-2 text-center">No rules found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="flex justify-end items-center py-3">
+        {{ pagination_widget(pagination, 'rules.rules_explorer', query_params) }}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Per page selection
+        const perPageSelect = document.getElementById('per-page-select');
+        if(perPageSelect) {
+            perPageSelect.addEventListener('change', function() {
+                const perPage = this.value;
+                const url = new URL(window.location.href);
+                url.searchParams.set('per_page', perPage);
+                url.searchParams.set('page', 1);
+                window.location.href = url.toString();
+            });
+        }
+
+        // Advanced filter toggle
+        const advancedFilterToggle = document.getElementById('advanced-filter-toggle');
+        const advancedFilters = document.getElementById('advanced-filters');
+        if(advancedFilterToggle) {
+            advancedFilterToggle.addEventListener('click', () => {
+                advancedFilters.classList.toggle('hidden');
+            });
+        }
+
+        // Clear filters button
+        const clearFiltersButton = document.getElementById('clear-filters-button');
+        if (clearFiltersButton) {
+            clearFiltersButton.addEventListener('click', () => {
+                const form = document.querySelector('form');
+                form.querySelectorAll('input[type="text"], input[type="date"]').forEach(input => input.value = '');
+                form.submit();
+            });
+        }
+
+        // Dropdown functionality
+        function setupDropdown(buttonId, menuId) {
+            const button = document.getElementById(buttonId);
+            const menu = document.getElementById(menuId);
+            if (button && menu) {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    menu.classList.toggle('hidden');
+                });
+            }
+        }
+        setupDropdown('customize-columns-button', 'customize-columns-dropdown');
+        setupDropdown('export-dropdown-button', 'export-dropdown-menu');
+
+        document.addEventListener('click', (event) => {
+            document.querySelectorAll('.absolute.z-10').forEach(menu => {
+                if (!menu.previousElementSibling.contains(event.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        });
+
+        // Export functionality
+        function setupExport(optionId, url) {
+            const option = document.getElementById(optionId);
+            if (option) {
+                option.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const filterForm = document.querySelector('form');
+                    const exportUrl = new URL(url, window.location.origin);
+                    const formData = new FormData(filterForm);
+                    for (const [key, value] of formData.entries()) {
+                        if (value) {
+                            exportUrl.searchParams.append(key, value);
+                        }
+                    }
+                    window.location.href = exportUrl.toString();
+                });
+            }
+        }
+        setupExport('export-csv-option', '{{ url_for('rules.export_rules_csv') }}');
+        setupExport('export-json-option', '{{ url_for('rules.export_rules_json') }}');
+
+        // Column customization and reordering
+        const rulesTableHeader = document.getElementById('rules-table-header');
+        const rulesTableBody = document.getElementById('rules-table-body');
+        const columnCheckboxes = document.querySelectorAll('#customize-columns-dropdown input[type="checkbox"]');
+        const columnOrderKey = 'rulesColumnOrder';
+        const columnVisibilityKey = 'rulesColumnVisibility';
+
+        function saveSettings(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        function loadSettings(key) {
+            const saved = localStorage.getItem(key);
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        function applyColumnVisibility() {
+            const visibility = loadSettings(columnVisibilityKey) || {};
+            columnCheckboxes.forEach(checkbox => {
+                const columnName = checkbox.dataset.columnName;
+                const isVisible = visibility[columnName] !== false;
+                checkbox.checked = isVisible;
+                document.querySelectorAll(`#rules-table-body [data-column-name="${columnName}"], #rules-table-header [data-column-name="${columnName}"]`).forEach(el => {
+                    el.style.display = isVisible ? '' : 'none';
+                });
+            });
+        }
+
+        function applyColumnOrder() {
+            const order = loadSettings(columnOrderKey);
+            if (!order) return;
+            
+            const headerRow = rulesTableHeader;
+            const bodyRows = Array.from(rulesTableBody.children);
+
+            const reorderElements = (parent, elements) => {
+                order.forEach(columnName => {
+                    const element = elements.find(el => el.dataset.columnName === columnName);
+                    if (element) parent.appendChild(element);
+                });
+            };
+
+            reorderElements(headerRow, Array.from(headerRow.children));
+            bodyRows.forEach(row => {
+                if(row.children.length > 1) reorderElements(row, Array.from(row.children));
+            });
+        }
+
+        columnCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const visibility = {};
+                columnCheckboxes.forEach(cb => {
+                    visibility[cb.dataset.columnName] = cb.checked;
+                });
+                saveSettings(columnVisibilityKey, visibility);
+                applyColumnVisibility();
+            });
+        });
+
+        if (rulesTableHeader) {
+            new Sortable(rulesTableHeader, {
+                animation: 150,
+                onEnd: function (evt) {
+                    const newOrder = Array.from(evt.target.children).map(th => th.dataset.columnName);
+                    saveSettings(columnOrderKey, newOrder);
+                    applyColumnOrder();
+                }
+            });
+        }
+
+        applyColumnVisibility();
+        applyColumnOrder();
+    });
+</script>
+{% endblock %}

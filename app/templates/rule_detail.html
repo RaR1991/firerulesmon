@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Rule Detail - Firewall Manager{% endblock %}
+
+{% block content %}
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5" style="color: var(--text-color);">Rule Detail: {{ rule.id }}</h2>
+<div class="px-4 py-3">
+    <div class="flex flex-col gap-4 rounded-xl border p-6" style="border-color: var(--table-border-color); background-color: var(--table-background-color);">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Source:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.source }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Destination:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.destination }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Port:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.port if rule.port else 'N/A' }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Protocol:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.protocol if rule.protocol else 'N/A' }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Interface:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.interface if rule.interface else 'N/A' }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Action:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.action }}</p>
+            </div>
+        </div>
+
+        <hr class="my-4" style="border-color: var(--table-border-color);">
+
+        <h3 class="text-lg font-bold leading-tight tracking-[-0.015em]" style="color: var(--text-color);">Metadata</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Created At:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Created By:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.created_by if rule.created_by else 'N/A' }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Last Modified At:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Last Modified By:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.updated_by if rule.updated_by else 'N/A' }}</p>
+            </div>
+        </div>
+
+        <hr class="my-4" style="border-color: var(--table-border-color);">
+
+        <h3 class="text-lg font-bold leading-tight tracking-[-0.015em]" style="color: var(--text-color);">Additional Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Tickets:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">
+                    {% if rule.tickets %}
+                        {% for ticket in rule.tickets %}
+                            {{ ticket.ticket_number }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Tags:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.tags if rule.tags else 'N/A' }}</p>
+            </div>
+            <div class="col-span-full">
+                <p class="text-sm font-medium leading-normal" style="color: var(--text-color);">Notes:</p>
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">{{ rule.notes if rule.notes else 'N/A' }}</p>
+            </div>
+        </div>
+
+        <hr class="my-4" style="border-color: var(--table-border-color);">
+
+        <h3 class="text-lg font-bold leading-tight tracking-[-0.015em]" style="color: var(--text-color);">Change Log / Audit Trail</h3>
+        <div class="mt-4 space-y-2">
+            {% if rule.change_logs %}
+                {% for log in rule.change_logs %}
+                    <div class="rounded-md p-3" style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color);">
+                        <p class="text-sm" style="color: var(--text-color);"><strong>Timestamp:</strong> {{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        <p class="text-sm" style="color: var(--text-color);"><strong>User:</strong> {{ log.user }}</p>
+                        <p class="text-sm" style="color: var(--text-color);"><strong>Changes:</strong> {{ log.changes }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-base font-normal leading-normal" style="color: var(--text-color);">No change log available for this rule.</p>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+            <a href="{{ url_for('rules.edit_rule', rule_id=rule.id) }}" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4" style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                Edit Rule
+            </a>
+            <a href="{{ url_for('rules.rules_explorer') }}" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4" style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                Back to Rules
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

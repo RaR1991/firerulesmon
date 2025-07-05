@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit' if form.source.data else 'Create' }} Rule - Firewall Manager{% endblock %}
+
+{% block content %}
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5" style="color: var(--text-color);">
+    {{ 'Edit' if form.source.data else 'Create' }} Rule
+</h2>
+<div class="px-4 py-3">
+    <form method="POST" action="" class="space-y-4">
+        {{ form.hidden_tag() }}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="source" class="block mb-2" style="color: var(--text-color);">Source</label>
+                {{ form.source(class="form-input w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div>
+                <label for="destination" class="block mb-2" style="color: var(--text-color);">Destination</label>
+                {{ form.destination(class="form-input w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div>
+                <label for="port" class="block mb-2" style="color: var(--text-color);">Port</label>
+                {{ form.port(class="form-input w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div>
+                <label for="protocol" class="block mb-2" style="color: var(--text-color);">Protocol</label>
+                {{ form.protocol(class="form-select w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div>
+                <label for="interface" class="block mb-2" style="color: var(--text-color);">Interface</label>
+                {{ form.interface(class="form-input w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div>
+                <label for="action" class="block mb-2" style="color: var(--text-color);">Action</label>
+                {{ form.action(class="form-select w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div>
+                <label for="tags" class="block mb-2" style="color: var(--text-color);">Tags</label>
+                {{ form.tags(class="form-input w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div>
+                <label for="tickets" class="block mb-2" style="color: var(--text-color);">Tickets (comma-separated)</label>
+                {{ form.tickets(class="form-input w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);") }}
+            </div>
+            <div class="col-span-full">
+                <label for="notes" class="block mb-2" style="color: var(--text-color);">Notes</label>
+                {{ form.notes(class="form-textarea w-full rounded-xl", style="background-color: var(--input-background-color); border: 1px solid var(--table-border-color); color: var(--input-text-color);", rows=4) }}
+            </div>
+            <div class="flex items-center">
+                {{ form.is_active(class="form-checkbox rounded") }}
+                <label for="is_active" class="ml-2" style="color: var(--text-color);">Active</label>
+            </div>
+        </div>
+        <div class="flex justify-end gap-4">
+            <a href="{{ url_for('rules.rules_explorer') }}" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4" style="background-color: var(--button-background-color); color: var(--button-text-color);">
+                Cancel
+            </a>
+            {{ form.submit(class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-10 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4", style="background-color: var(--link-color); color: var(--button-text-color);") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

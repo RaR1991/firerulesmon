@@ -1,0 +1,96 @@
+build a web-based firewall rule management and visualization tool. I will reference GUI mockup images and optionally include HTML or component code to speed up UI rendering.
+
+#### 🧠 Context:
+- I am comfortable with Python and Flask and will maintain the app myself.
+- I am using Gemini CLI and Vibe Coding with full access to local files and context7 MCP.
+- For now, the backend should use **SQLite**.
+- I may reference mockup images to guide UI structure.
+- I want clean, readable, modular code with a clear separation of concerns (blueprints/models/templates).
+- do not run any pyton pip or flask commands just list them I will do it and provide feedback as needed.
+- we are on windows envirement.
+
+---
+
+### 🎯 Objective:
+Build a modern, theme-aware web app that allows engineers to organize, document, search, and audit firewall rules.
+
+---
+
+### 🗂️ Core Features:
+
+1. **Dashboard**
+   - Show total, active, disabled rules.
+   - Rules modified this week, and orphaned (no ticket).
+   - Rule insights by Action, Interface/Zone, and Protocol/Port (as charts or widgets).
+
+2. **Rules Explorer Page**
+   - Table/list of rules with filtering by: source, destination, port, protocol, interface, action, tags, modified date, and ticket number.
+   - Search bar with live filtering.
+   - Clickable row opens full Rule Detail View.
+
+3. **Rule Detail View**
+   - View: source, destination, port, protocol, action.
+   - Metadata: created at/by, modified at/by.
+   - Ticket association (multiple tickets, optional validation).
+   - Tags and notes.
+   - Change log / version history.
+   - Comments or audit trail.
+
+4. **Create / Edit Rule UI**
+   - Form for all key fields: action, ports, IPs, protocol, interface, etc.
+   - Add/edit tags and ticket links.
+   - Save to database and update history.
+
+5. **Settings + Theme Toggle**
+   - Toggle between light/dark theme.
+   - Set default interface filtering or view.
+
+6. **Authentication / Roles**
+   - Basic login system.
+   - View-only, editor, and admin roles.
+
+---
+
+### 📦 Tech Stack Preferences:
+
+- **Backend**: Python 3.x with Flask (blueprints recommended)
+- **Database**: SQLite with SQLAlchemy
+- **Frontend**: HTML5 with Jinja2 templates (I can provide mockups and snippets)
+- **Styling**: TailwindCSS or Bootstrap 5 (or agent-suggested modern framework)
+- **Charts**: Chart.js or equivalent for insights widgets
+- **Theme support**: Use CSS variables or a toggle system
+
+---
+
+### 📁 File/Folder Structure (Recommended):
+
+/app
+/static
+/templates
+/blueprints
+/rules
+/auth
+/dashboard
+/models
+/utils
+/config
+settings.py
+/run.py
+
+
+---
+
+### ✅ Additional Notes:
+- Please keep code maintainable with comments and docstrings.
+- Use environment variables or config files for DB credentials and secret keys.
+- Start with dummy data if needed, but support import of real firewall configs later.
+- Generate the core app with proper routes, layout templates, and a working dashboard.
+
+---
+
+Begin with:
+1. Basic Flask app scaffold with theme-aware layout.
+2. Rules model (with ticket and metadata support).
+3. Rules Explorer UI with filters.
+4. Dashboard view with sample metrics.
+5. Rule Detail View (clickable from explorer).

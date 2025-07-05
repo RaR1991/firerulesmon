@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Firewall Manager{% endblock %}
+
+{% block content %}
+
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5" style="color: var(--text-color);">Overview</h2>
+<div class="flex flex-wrap gap-4 p-4">
+    <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Total Rules</p>
+        <p class="tracking-light text-2xl font-bold leading-tight" style="color: var(--text-color);">{{ total_rules }}</p>
+    </div>
+    <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Active Rules</p>
+        <p class="tracking-light text-2xl font-bold leading-tight" style="color: var(--text-color);">{{ active_rules }}</p>
+    </div>
+    <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Disabled Rules</p>
+        <p class="tracking-light text-2xl font-bold leading-tight" style="color: var(--text-color);">{{ disabled_rules }}</p>
+    </div>
+    <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Rules Modified This Week</p>
+        <p class="tracking-light text-2xl font-bold leading-tight" style="color: var(--text-color);">{{ rules_modified_this_week }}</p>
+    </div>
+    <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Rules Modified Today</p>
+        <p class="tracking-light text-2xl font-bold leading-tight" style="color: var(--text-color);">{{ rules_modified_today }}</p>
+    </div>
+    <div class="flex min-w-[158px] flex-1 flex-col gap-2 rounded-xl p-6 border" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Rules Without Tickets</p>
+        <p class="tracking-light text-2xl font-bold leading-tight" style="color: var(--text-color);">{{ rules_without_tickets }}</p>
+    </div>
+</div>
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5" style="color: var(--text-color);">Rule Insights</h2>
+<div class="flex flex-wrap gap-4 px-4 py-6">
+    <div class="flex min-w-72 flex-1 flex-col gap-2 rounded-xl border p-6 chart-container cursor-pointer" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Rule Types by Action</p>
+        <div class="min-h-[180px] py-3">
+            <canvas id="actionChart"></canvas>
+        </div>
+    </div>
+    <div class="flex min-w-72 flex-1 flex-col gap-2 rounded-xl border p-6 chart-container cursor-pointer" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Rules by Zone/Interface</p>
+        <div class="min-h-[180px] py-3">
+            <canvas id="zoneChart"></canvas>
+        </div>
+    </div>
+    <div class="flex min-w-72 flex-1 flex-col gap-2 rounded-xl border p-6 chart-container cursor-pointer" style="border-color: var(--table-border-color);">
+        <p class="text-base font-medium leading-normal" style="color: var(--text-color);">Rules by Protocol/Port</p>
+        <div class="min-h-[180px] py-3">
+            <canvas id="protocolChart"></canvas>
+        </div>
+    </div>
+</div>
+<h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5" style="color: var(--text-color);">Top 5 Most Modified Rules</h2>
+<div class="px-4 py-3 @container">
+    <div class="flex overflow-hidden rounded-xl border" style="border-color: var(--table-border-color); background-color: var(--table-background-color);">
+        <table class="flex-1">
+            <thead>
+                <tr style="background-color: var(--table-header-background-color);">
+                    <th class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-120 px-4 py-3 text-left w-[400px] text-sm font-medium leading-normal" style="color: var(--text-color);">Rule ID</th>
+                    <th class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-240 px-4 py-3 text-left w-[400px] text-sm font-medium leading-normal" style="color: var(--text-color);">Action</th>
+                    <th class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-360 px-4 py-3 text-left w-[400px] text-sm font-medium leading-normal" style="color: var(--text-color);">Source</th>
+                    <th class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-480 px-4 py-3 text-left w-[400px] text-sm font-medium leading-normal" style="color: var(--text-color);">Destination</th>
+                    <th class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-600 px-4 py-3 text-left w-[400px] text-sm font-medium leading-normal" style="color: var(--text-color);">
+                        Last Modified
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rule in top_modified_rules %}
+                <tr class="border-t" style="border-color: var(--table-border-color);" onmouseover="this.style.backgroundColor='var(--table-row-hover-background-color)'" onmouseout="this.style.backgroundColor='var(--table-background-color)'">
+                    <td class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-120 h-[72px] px-4 py-2 w-[400px] text-sm font-normal leading-normal" style="color: var(--text-color);">{{ rule.id }}</td>
+                    <td class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-240 h-[72px] px-4 py-2 w-[400px] text-sm font-normal leading-normal" style="color: var(--text-color);">{{ rule.action }}</td>
+                    <td class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-360 h-[72px] px-4 py-2 w-[400px] text-sm font-normal leading-normal" style="color: var(--text-color);">{{ rule.source }}</td>
+                    <td class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-480 h-[72px] px-4 py-2 w-[400px] text-sm font-normal leading-normal" style="color: var(--text-color);">{{ rule.destination }}</td>
+                    <td class="table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-600 h-[72px] px-4 py-2 w-[400px] text-sm font-normal leading-normal" style="color: var(--text-color);">
+                        {{ rule.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <style>
+        @container(max-width:120px){.table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-120{display: none;}}
+        @container(max-width:240px){.table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-240{display: none;}}
+        @container(max-width:360px){.table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-360{display: none;}}
+        @container(max-width:480px){.table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-480{display: none;}}
+        @container(max-width:600px){.table-897d0158-bf13-4303-a590-8d39be9fd2a3-column-600{display: none;}}
+    </style>
+
+    <!-- Chart Modal Structure -->
+    <div id="chartModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-4 rounded-lg shadow-lg w-11/12 max-w-4xl relative" style="background-color: var(--background-color);">
+            <button id="closeModal" class="absolute top-2 right-2 text-gray-700 hover:text-gray-900" style="color: var(--text-color);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+            <h3 id="modalChartTitle" class="text-lg font-bold mb-4" style="color: var(--text-color);"></h3>
+            <div class="relative h-96">
+                <canvas id="modalChartCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Data from Flask backend
+        const ruleActionData = {{ rule_action_data | tojson }};
+        const ruleZoneData = {{ rule_zone_data | tojson }};
+        const ruleProtocolData = {{ rule_protocol_data | tojson }};
+
+        const chartBackgroundColor = [
+            'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)',
+            'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)'
+        ];
+        const chartBorderColor = [
+            'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'
+        ];
+
+        function createChart(canvasId, chartData, chartType = 'bar') {
+            const ctx = document.getElementById(canvasId);
+            if (!ctx) return null;
+            return new Chart(ctx, {
+                type: chartType,
+                data: {
+                    labels: Object.keys(chartData),
+                    datasets: [{
+                        data: Object.values(chartData),
+                        backgroundColor: chartBackgroundColor,
+                        borderColor: chartBorderColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    },
+                    scales: {
+                        x: { ticks: { color: 'var(--text-color)' }, grid: { color: 'var(--chart-grid-color)' } },
+                        y: { beginAtZero: true, ticks: { color: 'var(--text-color)' }, grid: { color: 'var(--chart-grid-color)' } }
+                    }
+                }
+            });
+        }
+
+        // Create dashboard charts
+        createChart('actionChart', ruleActionData);
+        createChart('zoneChart', ruleZoneData);
+        createChart('protocolChart', ruleProtocolData);
+
+        const chartModal = document.getElementById('chartModal');
+        const closeModalButton = document.getElementById('closeModal');
+        const modalChartTitle = document.getElementById('modalChartTitle');
+        const chartContainers = document.querySelectorAll('.chart-container');
+
+        let currentModalChart = null;
+
+        chartContainers.forEach(container => {
+            container.addEventListener('click', function() {
+                const chartId = this.querySelector('canvas').id;
+                let chartData, chartTitle;
+
+                switch (chartId) {
+                    case 'actionChart':
+                        chartData = ruleActionData;
+                        chartTitle = 'Rule Types by Action';
+                        break;
+                    case 'zoneChart':
+                        chartData = ruleZoneData;
+                        chartTitle = 'Rules by Zone/Interface';
+                        break;
+                    case 'protocolChart':
+                        chartData = ruleProtocolData;
+                        chartTitle = 'Rules by Protocol/Port';
+                        break;
+                }
+
+                modalChartTitle.textContent = chartTitle;
+                chartModal.classList.remove('hidden');
+
+                if (currentModalChart) {
+                    currentModalChart.destroy();
+                }
+
+                // Use the helper to create the chart in the modal
+                currentModalChart = createChart('modalChartCanvas', chartData);
+            });
+        });
+
+        function closeModal() {
+            chartModal.classList.add('hidden');
+            if (currentModalChart) {
+                currentModalChart.destroy();
+                currentModalChart = null;
+            }
+        }
+
+        closeModalButton.addEventListener('click', closeModal);
+        chartModal.addEventListener('click', function(event) {
+            if (event.target === chartModal) {
+                closeModal();
+            }
+        });
+    });
+</script>
+{% endblock %}
